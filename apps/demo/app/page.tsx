@@ -26,22 +26,34 @@ export default function Home() {
           Get a wallet
         </Link>
 
-        <div className="cpay-terminal mt-12 p-5 text-left max-w-md mx-auto">
-          <div className="cpay-monolabel mb-3">how it works</div>
-          <ul className="space-y-2 text-sm text-[#8fb5b5] font-mono">
-            <li>
-              <span className="cpay-arrow">▸</span> we mint a fresh wallet, just for you
+        <div className="cpay-blueprint mt-12 p-6 text-left max-w-md mx-auto">
+          <span className="cpay-bp-corner cpay-bp-corner-tl" />
+          <span className="cpay-bp-corner cpay-bp-corner-tr" />
+          <span className="cpay-bp-corner cpay-bp-corner-bl" />
+          <span className="cpay-bp-corner cpay-bp-corner-br" />
+          <div className="cpay-bp-header">
+            <span className="cpay-bp-label">how it works</span>
+            <span className="cpay-bp-coord">[ SEQ · 04 ]</span>
+          </div>
+          <ol className="cpay-bp-steps">
+            <li className="cpay-bp-step">
+              <span>we mint a fresh wallet, just for you</span>
+              <span className="cpay-bp-num">01 / 04</span>
             </li>
-            <li>
-              <span className="cpay-arrow">▸</span> it lives for 30 minutes, then vanishes
+            <li className="cpay-bp-step">
+              <span>it lives for 30 minutes, then vanishes</span>
+              <span className="cpay-bp-num">02 / 04</span>
             </li>
-            <li>
-              <span className="cpay-arrow">▸</span> no email, no login, no database
+            <li className="cpay-bp-step">
+              <span>no email, no login, no database</span>
+              <span className="cpay-bp-num">03 / 04</span>
             </li>
-            <li>
-              <span className="cpay-arrow">▸</span> send USDC to any address on Base
+            <li className="cpay-bp-step">
+              <span>send USDC to any address on Base</span>
+              <span className="cpay-bp-num">04 / 04</span>
             </li>
-          </ul>
+          </ol>
+          <div className="cpay-bp-foot">│  END OF SEQUENCE  │</div>
         </div>
       </div>
     </main>
