@@ -8,6 +8,8 @@ out/
 # build
 dist/
 build/
+!packages/core/dist/
+!packages/react/dist/
 
 # env
 .env
