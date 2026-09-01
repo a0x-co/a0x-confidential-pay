@@ -1,0 +1,38 @@
+{
+  "name": "@a0x/confidential-pay",
+  "version": "0.1.0",
+  "description": "Drop-in confidential USDC payments widget for Base. Built on CDP Non-custodial Wallets.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "next": "14",
+    "react": "^18",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@a0x/confidential-pay-core": "workspace:^"
+  }
+}
