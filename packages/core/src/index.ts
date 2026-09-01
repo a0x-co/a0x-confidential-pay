@@ -99,6 +99,21 @@ export class ConfidentialPay {
   }
 
   /**
+   * Requests testnet USDC from the CDP faucet (only works on testnets).
+   */
+  async faucetUsdc(address: `0x${string}`) {
+    if (this.network === "base-mainnet") {
+      throw new Error("Faucet is only available on testnets.");
+    }
+    const res = await this.client.evm.requestFaucet({
+      address,
+      network: "base-sepolia",
+      token: "usdc",
+    });
+    return res.transactionHash;
+  }
+
+  /**
    * Waits for a transaction to reach finality on the configured network.
    */
   async waitForReceipt(txHash: `0x${string}`) {
