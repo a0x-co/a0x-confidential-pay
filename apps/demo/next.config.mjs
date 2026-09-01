@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@a0x/confidential-pay", "@a0x/confidential-pay-core"],
+  transpilePackages: ["@bvdaniel/confidential-pay", "@bvdaniel/confidential-pay-core"],
   poweredByHeader: false,
 };
 

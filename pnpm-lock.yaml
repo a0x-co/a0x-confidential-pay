@@ -10,10 +10,10 @@ importers:
 
   apps/demo:
     dependencies:
-      '@a0x/confidential-pay':
+      '@bvdaniel/confidential-pay':
         specifier: workspace:^
         version: link:../../packages/react
-      '@a0x/confidential-pay-core':
+      '@bvdaniel/confidential-pay-core':
         specifier: workspace:^
         version: link:../../packages/core
       '@x402/core':
@@ -65,6 +65,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@coinbase/cdp-sdk':
+        specifier: ^1.55.0
+        version: 1.55.0(@x402/core@2.24.0)(@x402/evm@2.24.0(typescript@5.9.3))(@x402/extensions@2.24.0(typescript@5.9.3))(@x402/svm@2.24.0(@solana/kit@5.5.1(typescript@5.9.3))(@solana/sysvars@5.5.1(typescript@5.9.3)))(typescript@5.9.3)
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -72,9 +75,6 @@ importers:
         specifier: ^2.56.1
         version: 2.56.1(typescript@5.9.3)(zod@3.25.76)
     devDependencies:
-      '@coinbase/cdp-sdk':
-        specifier: ^1.55.0
-        version: 1.55.0(@x402/core@2.24.0)(@x402/evm@2.24.0(typescript@5.9.3))(@x402/extensions@2.24.0(typescript@5.9.3))(@x402/svm@2.24.0(@solana/kit@5.5.1(typescript@5.9.3))(@solana/sysvars@5.5.1(typescript@5.9.3)))(typescript@5.9.3)
       '@types/node':
         specifier: ^22
         version: 22.20.1
@@ -84,7 +84,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@a0x/confidential-pay-core':
+      '@bvdaniel/confidential-pay-core':
         specifier: workspace:^
         version: link:../core
     devDependencies:

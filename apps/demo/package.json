@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@a0x/confidential-pay": "workspace:^",
-    "@a0x/confidential-pay-core": "workspace:^",
+    "@bvdaniel/confidential-pay": "workspace:^",
+    "@bvdaniel/confidential-pay-core": "workspace:^",
     "@x402/core": "^2.24.0",
     "@x402/evm": "^2.24.0",
     "@x402/express": "^2.24.0",

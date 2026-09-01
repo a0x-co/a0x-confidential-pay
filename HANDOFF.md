@@ -4,13 +4,14 @@
 
 ## Where we are (read this first)
 
-We shipped a working end-to-end demo of `@a0x/confidential-pay` — a drop-in React component for confidential USDC payments on Base. Each visitor lands on the page, claims a 30-minute ephemeral wallet (no email, no account, no DB), and sends USDC from that wallet to any address on Base Sepolia.
+We shipped a working end-to-end demo of `@bvdaniel/confidential-pay` — a drop-in React component for confidential USDC payments on Base. Each visitor lands on the page, claims a 30-minute ephemeral wallet (no email, no account, no DB), and sends USDC from that wallet to any address on Base Sepolia.
 
 - **Live:** https://a0x-confidential-pay-demo-2w42vltmu-bvdaniels-projects.vercel.app
 - **Repo:** github.com/a0x-co/a0x-confidential-pay
 - **Vercel project:** `a0x-confidential-pay-demo` (id `prj_ssLOsHiSIp7sjPqYOGLlrv2XVWWr`)
 - **What works end-to-end:** confirmed live, tx `0x0feb9e27eeb7a113f7a1eb00bdfaf94aa6ee34798d74fb29dcaf012726fab7fb` on Base Sepolia
-- **What's left:** swap the public ERC-20 transfer for a confidential one via Base Ledgers (Track B); publish to npm
+- **Published to npm:** `@bvdaniel/confidential-pay@0.1.0` + `@bvdaniel/confidential-pay-core@0.1.1`
+- **What's left:** swap the public ERC-20 transfer for a confidential one via Base Ledgers (Track B)
 
 The flow is verified: visitor mints → dashboard shows a fresh wallet → enter recipient + amount → pay → tx settles on Base Sepolia. Server is stateless; the 30-min identity is an HMAC-signed cookie.
 
@@ -50,10 +51,10 @@ a0x-confidential-pay/                                (pnpm workspace)
 │   ├── .env.local                                   (CDP creds + KP_SECRET — gitignored)
 │   └── .env.example                                 (committed template)
 │
-├── packages/core/                                   (@a0x/confidential-pay-core — Node only)
+├── packages/core/                                   (@bvdaniel/confidential-pay-core — Node only, v0.1.1 on npm)
 │   └── src/index.ts                                 (ConfidentialPay class; fundOnFirstSend polls USDC)
 │
-└── packages/react/                                  (@a0x/confidential-pay — internal package, not yet published)
+└── packages/react/                                  (@bvdaniel/confidential-pay — v0.1.0 on npm)
     ├── src/index.tsx                                (ConfidentialUSDC widget; editable recipient when prop is empty)
     ├── src/server.ts                                (createConfidentialPayHandler)
     └── src/ConfidentialUSDC.css                     (CSS shipped via dist/)
@@ -76,8 +77,8 @@ The CDP credential values live in `apps/demo/.env.local` (gitignored) and as Ver
 ### 1. Track B — CDP Payments business onboarding (gates real confidentiality)
 Required for actual Base Ledgers confidential transfers (public ERC-20 today). Steps: `portal.cdp.coinbase.com` → `a0x-confidential-pay` project → "Go live with payments" 3-step flow (Business details → Compliance → Go live). Approval takes weeks. Once cleared, swap `sendUsdcPayment` in `packages/core/src/index.ts` → call Base Ledgers. The widget and demo need no changes.
 
-### 2. Publish `@a0x/confidential-pay` to npm
-Repo is ready. `npm login`, then from workspace root: `pnpm publish --filter @a0x/confidential-pay`. Package files: `packages/react/package.json` exports `.`, `./server`, `./ConfidentialUSDC.css`. Consider publishing core first as a peer.
+### 2. ~~Publish to npm~~ → DONE (v0.1.0 / v0.1.1 on npm)
+`@bvdaniel/confidential-pay@0.1.0` and `@bvdaniel/confidential-pay-core@0.1.1` are live. Scope is `@bvdaniel` (npm user `bvdaniel`) — the `@a0x` npm scope does not exist and free accounts can't create it. Republish: from workspace root, `pnpm publish --filter @bvdaniel/confidential-pay-core` then `pnpm publish --filter @bvdaniel/confidential-pay`. See "npm publish gotchas" in Sharp edges.
 
 ## Sharp edges — what didn't work and why
 
@@ -98,6 +99,13 @@ Repo is ready. `npm login`, then from workspace root: `pnpm publish --filter @a0
 
 ### Deployment protection
 - Vercel personal-team default is `all_except_custom_domains`, which 302s `*.vercel.app` to login. The user turned this OFF on this project's Settings → Deployment Protection. If you create a new project, do the same.
+
+### npm publish gotchas (learned the hard way)
+- **2FA blocks publish**: `npm login` credentials don't satisfy 2FA-only publish. Need a granular access token (Settings → Tokens) with **Read and write** on the scope + **"Bypass 2FA"** box checked, used via `NODE_AUTH_TOKEN`. The default `~/.npmrc` from `npm login` overrides it — run publish with a throwaway `HOME` containing only the token, e.g. `HOME=/tmp/a0x-npm-home`.
+- **`workspace:^` is rewritten to the real version at publish time** by pnpm — nobody edits package.json for that.
+- **Peer deps must have a real published range**: core's original peer `@coinbase/cdp-sdk@^0.9.0` doesn't exist (only 1.x). It's a runtime import (`CdpClient`), so it became a regular `dependency: ^1.55.0`.
+- **`@a0x` npm scope isn't owned by `bvdaniel`** — free npm accounts can't claim it. Publishes go under `@bvdaniel/*`. If a paid `@a0x` org is ever created, the packages can be renamed and republished.
+- The demo's UI copy still says "// @a0x/confidential-pay" — that's product branding, not the published package name. Leave it.
 
 ## Anti-patterns to avoid
 
