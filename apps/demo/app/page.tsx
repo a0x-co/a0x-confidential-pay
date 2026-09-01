@@ -26,35 +26,24 @@ export default function Home() {
           Get a wallet
         </Link>
 
-        <div className="cpay-blueprint mt-12 p-6 text-left max-w-md mx-auto">
-          <span className="cpay-bp-corner cpay-bp-corner-tl" />
-          <span className="cpay-bp-corner cpay-bp-corner-tr" />
-          <span className="cpay-bp-corner cpay-bp-corner-bl" />
-          <span className="cpay-bp-corner cpay-bp-corner-br" />
-          <div className="cpay-bp-header">
-            <span className="cpay-bp-label">how it works</span>
-            <span className="cpay-bp-coord">[ SEQ · 04 ]</span>
-          </div>
-          <ol className="cpay-bp-steps">
-            <li className="cpay-bp-step">
-              <span>we mint a fresh wallet, just for you</span>
-              <span className="cpay-bp-num">01 / 04</span>
-            </li>
-            <li className="cpay-bp-step">
-              <span>it lives for 30 minutes, then vanishes</span>
-              <span className="cpay-bp-num">02 / 04</span>
-            </li>
-            <li className="cpay-bp-step">
-              <span>no email, no login, no database</span>
-              <span className="cpay-bp-num">03 / 04</span>
-            </li>
-            <li className="cpay-bp-step">
-              <span>send USDC to any address on Base</span>
-              <span className="cpay-bp-num">04 / 04</span>
-            </li>
-          </ol>
-          <div className="cpay-bp-foot">│  END OF SEQUENCE  │</div>
-        </div>
+        <ol className="cpay-steps mt-12 text-left max-w-md mx-auto">
+          <li className="cpay-step">
+            <span className="cpay-step-num">01</span>
+            <span className="cpay-step-desc">we mint a fresh wallet, just for you</span>
+          </li>
+          <li className="cpay-step">
+            <span className="cpay-step-num">02</span>
+            <span className="cpay-step-desc">it lives for 30 minutes, then vanishes</span>
+          </li>
+          <li className="cpay-step">
+            <span className="cpay-step-num">03</span>
+            <span className="cpay-step-desc">no email, no login, no database</span>
+          </li>
+          <li className="cpay-step">
+            <span className="cpay-step-num">04</span>
+            <span className="cpay-step-desc">send USDC to any address on Base</span>
+          </li>
+        </ol>
       </div>
     </main>
   );

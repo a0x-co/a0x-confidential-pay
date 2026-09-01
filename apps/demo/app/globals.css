@@ -10,10 +10,6 @@
   --accent: #00ffff;
   --accent-dim: rgba(0, 255, 255, 0.35);
   --glass: rgba(9, 18, 18, 0.72);
-  --bp-bg: rgba(10, 25, 41, 0.85);
-  --bp-grid: rgba(0, 200, 255, 0.05);
-  --bp-stroke: rgba(0, 255, 255, 0.4);
-  --bp-dim: rgba(0, 255, 255, 0.45);
 }
 
 * {
@@ -112,84 +108,29 @@ a {
   50%, 100% { opacity: 0; }
 }
 
-/* Blueprint technical card (How it works) */
-.cpay-blueprint {
-  position: relative;
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
-  background:
-    repeating-linear-gradient(0deg, var(--bp-grid) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(90deg, var(--bp-grid) 0 1px, transparent 1px 24px),
-    var(--bp-bg);
-  border: 1px solid var(--bp-stroke);
-  box-shadow:
-    0 0 24px -14px rgba(0, 255, 255, 0.4),
-    inset 0 0 40px -32px rgba(0, 255, 255, 0.4);
-}
-
-.cpay-bp-corner {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  pointer-events: none;
-}
-.cpay-bp-corner-tl { top: -1px; left: -1px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
-.cpay-bp-corner-tr { top: -1px; right: -1px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); }
-.cpay-bp-corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); }
-.cpay-bp-corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
-
-.cpay-bp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid var(--bp-stroke);
-}
-.cpay-bp-label {
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-.cpay-bp-coord {
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  color: var(--bp-dim);
-}
-
-.cpay-bp-steps {
+/* Minimal numbered steps */
+.cpay-steps {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-.cpay-bp-step {
+.cpay-step {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
-  gap: 1rem;
-  padding: 0.7rem 0;
-  border-top: 1px dashed rgba(0, 255, 255, 0.18);
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  color: #b6e7e7;
+  gap: 1.5rem;
+  padding: 0.6rem 0;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
-.cpay-bp-step:last-child {
-  border-bottom: 1px dashed rgba(0, 255, 255, 0.18);
-}
-.cpay-bp-num {
-  color: var(--bp-dim);
+.cpay-step-num {
+  font-size: 1.5rem;
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.1em;
-  font-size: 11px;
-  white-space: nowrap;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  min-width: 2.5rem;
 }
-
-.cpay-bp-foot {
-  margin-top: 0.75rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--bp-stroke);
-  font-size: 9px;
-  letter-spacing: 0.3em;
-  color: var(--bp-dim);
-  text-align: center;
+.cpay-step-desc {
+  color: #b6e7e7;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
 }
