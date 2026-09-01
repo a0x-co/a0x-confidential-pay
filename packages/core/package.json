@@ -1,0 +1,36 @@
+{
+  "name": "@a0x/confidential-pay-core",
+  "version": "0.1.0",
+  "description": "Core wrapper around CDP Non-custodial Wallets for confidential USDC payments on Base.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "smoke": "node --env-file=.env dist/smoke.js",
+    "test": "node --test dist/test/*.test.js"
+  },
+  "peerDependencies": {
+    "@coinbase/cdp-sdk": "^0.9.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "viem": "^2.56.1"
+  },
+  "devDependencies": {
+    "@coinbase/cdp-sdk": "^1.55.0",
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
+}

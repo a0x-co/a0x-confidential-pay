@@ -1,0 +1,12 @@
+{
+  "name": "a0x-confidential-pay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "@a0x/confidential-pay — drop-in confidential USDC payments for Base. Built on CDP Non-custodial Wallets.",
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "dev:demo": "pnpm --filter @a0x/confidential-pay-demo dev"
+  }
+}
