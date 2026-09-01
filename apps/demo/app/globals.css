@@ -113,24 +113,26 @@ a {
   list-style: none;
   padding: 0;
   margin: 0;
+  text-align: center;
 }
 .cpay-step {
   display: flex;
   align-items: baseline;
-  gap: 1.5rem;
-  padding: 0.6rem 0;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  color: #b6e7e7;
 }
 .cpay-step-num {
-  font-size: 1.5rem;
-  color: var(--accent);
+  color: var(--accent-dim);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-  min-width: 2.5rem;
+  letter-spacing: 0.15em;
+  opacity: 0.7;
+  min-width: 1.8rem;
 }
 .cpay-step-desc {
   color: #b6e7e7;
-  font-size: 0.95rem;
-  letter-spacing: 0.01em;
 }
