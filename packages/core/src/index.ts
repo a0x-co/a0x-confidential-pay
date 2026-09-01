@@ -35,6 +35,10 @@ const ERC20_BALANCE_ABI = [
   },
 ];
 
+function applyTimeout(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export interface ConfidentialPayOptions {
   apiKeyId?: string;
   apiKeySecret?: string;
@@ -191,7 +195,12 @@ export class ConfidentialPay {
       if (usdc < 1) {
         const hash = await this.faucetUsdc(address);
         await this.waitForReceipt(hash);
-        await new Promise((r) => setTimeout(r, 8000));
+      }
+      // Poll until USDC is visible on-chain (faucet credit and CDP's view lag on new wallets).
+      await applyTimeout(15000);
+      for (let i = 0; i < 12; i++) {
+        if (Number(await this.getUsdcBalance(address)) >= 1) break;
+        await applyTimeout(5000);
       }
     } catch {
       // faucet rate-limited — fall through, caller retries
@@ -202,6 +211,7 @@ export class ConfidentialPay {
       if (eth < 0.001) {
         const hash = await this.faucetEth(address);
         await this.waitForReceipt(hash);
+        await applyTimeout(5000);
       }
     } catch {
       // ETH faucet rate-limited — fall through
