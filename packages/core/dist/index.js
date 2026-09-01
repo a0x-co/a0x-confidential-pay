@@ -116,6 +116,13 @@ export class ConfidentialPay {
         return formatUnits(balance, 6);
     }
     /**
+     * Gets the native ETH balance for a wallet address (for gas).
+     */
+    async getNativeBalance(address) {
+        const balance = await this.publicClient.getBalance({ address });
+        return formatUnits(balance, 18);
+    }
+    /**
      * Sends a USDC payment from a wallet address to a recipient.
      * Returns the transaction hash.
      */

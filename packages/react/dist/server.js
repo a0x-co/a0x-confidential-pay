@@ -49,27 +49,34 @@ export function createConfidentialPayHandler(options) {
                 const wallet = await pay.getOrCreateWallet("widget-auto");
                 sender = wallet.address;
                 if (options?.devFaucet && isTestnet) {
-                    let funded = false;
-                    try {
-                        let balance = Number(await pay.getUsdcBalance(sender));
-                        if (balance < 1) {
+                    const usdcBal = Number(await pay.getUsdcBalance(sender));
+                    const ethBal = Number(await pay.getNativeBalance(sender));
+                    if (usdcBal < 1) {
+                        try {
                             const hash = await pay.faucetUsdc(sender);
                             await pay.waitForReceipt(hash);
+                            applyTrustedTimeout(8000);
+                            for (let i = 0; i < 12; i++) {
+                                const b = Number(await pay.getUsdcBalance(sender));
+                                if (b >= 1)
+                                    break;
+                                applyTrustedTimeout(5000);
+                            }
                         }
-                        applyTrustedTimeout(10000);
-                        for (let i = 0; i < 12; i++) {
-                            balance = Number(await pay.getUsdcBalance(sender));
-                            if (balance >= 1)
-                                break;
-                            applyTrustedTimeout(5000);
+                        catch {
+                            // faucet may be rate-limited; fall through if already funded
                         }
-                        const ethHash = await pay.faucetEth(sender);
-                        await pay.waitForReceipt(ethHash);
-                        funded = balance >= 1;
                     }
-                    catch {
-                        funded = false;
+                    if (ethBal < 0.001) {
+                        try {
+                            const ethHash = await pay.faucetEth(sender);
+                            await pay.waitForReceipt(ethHash);
+                        }
+                        catch {
+                            // ETH faucet may be rate-limited; fall through if already funded
+                        }
                     }
+                    const funded = Number(await pay.getUsdcBalance(sender)) >= 1;
                     if (!funded) {
                         return NextResponse.json({ error: "faucet unavailable — fund the sender wallet or retry" }, { status: 502 });
                     }
