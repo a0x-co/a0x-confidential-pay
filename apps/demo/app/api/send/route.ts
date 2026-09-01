@@ -34,7 +34,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const pay = new ConfidentialPay();
-    await pay.fundOnFirstSend(kp.wallet as `0x${string}`);
+    const funded = await pay.fundOnFirstSend(kp.wallet as `0x${string}`);
+    if (!funded) {
+      return NextResponse.json(
+        { error: "faucet unavailable — try again in a few minutes (per-project USDC rate limit)" },
+        { status: 502 },
+      );
+    }
 
     const result = await pay.sendUsdcPayment({
       from: kp.wallet,
