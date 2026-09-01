@@ -13,6 +13,9 @@ importers:
       '@a0x/confidential-pay':
         specifier: workspace:^
         version: link:../../packages/react
+      '@a0x/confidential-pay-core':
+        specifier: workspace:^
+        version: link:../../packages/core
       '@x402/core':
         specifier: ^2.24.0
         version: 2.24.0

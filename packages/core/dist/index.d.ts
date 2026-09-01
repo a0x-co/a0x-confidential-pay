@@ -56,4 +56,10 @@ export declare class ConfidentialPay {
         transactionHash: `0x${string}`;
         network: string;
     }>;
+    /**
+     * Funds a wallet for the first time on testnets: USDC if below 1, ETH gas if below 0.001.
+     * Skips both if already funded. Fails silently on faucet rate-limits.
+     * @returns true if the wallet holds >= 1 USDC after this call.
+     */
+    fundOnFirstSend(address: `0x${string}`): Promise<boolean>;
 }

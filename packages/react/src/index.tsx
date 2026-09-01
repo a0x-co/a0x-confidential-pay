@@ -31,11 +31,14 @@ export function ConfidentialUSDC({
   sender,
 }: ConfidentialUSDCProps) {
   const [amount, setAmount] = useState(initialAmount);
+  const [recipientInput, setRecipientInput] = useState(recipient ?? "");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
   const [effectiveSender, setEffectiveSender] = useState<string | undefined>(
     sender,
   );
+
+  const to = recipient || recipientInput;
 
   async function handlePay() {
     setStatus("sending");
@@ -44,7 +47,7 @@ export function ConfidentialUSDC({
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipient, amount, sender: effectiveSender }),
+        body: JSON.stringify({ recipient: to, amount, sender: effectiveSender }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`);
@@ -63,6 +66,27 @@ export function ConfidentialUSDC({
     <div className="cpw">
       <div className="cpw-label">Confidential USDC · Base</div>
 
+      <label className="cpw-field-label" htmlFor="cpw-recipient">
+        Recipient
+      </label>
+      {recipient ? (
+        <div className="cpw-recipient">
+          To: <span className="cpw-recipient-addr">{recipient}</span>
+        </div>
+      ) : (
+        <input
+          id="cpw-recipient"
+          type="text"
+          inputMode="text"
+          placeholder="0x…"
+          value={recipientInput}
+          disabled={status === "sending"}
+          onChange={(e) => setRecipientInput(e.target.value)}
+          className="cpw-input"
+          aria-label="Recipient wallet address"
+        />
+      )}
+
       <label className="cpw-field-label" htmlFor="cpw-amount">
         Amount (USDC)
       </label>
@@ -78,10 +102,6 @@ export function ConfidentialUSDC({
         className="cpw-input"
         aria-label="Amount in USDC"
       />
-
-      <div className="cpw-recipient">
-        To: <span className="cpw-recipient-addr">{recipient}</span>
-      </div>
 
       <button
         onClick={handlePay}

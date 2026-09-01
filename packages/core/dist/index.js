@@ -150,4 +150,35 @@ export class ConfidentialPay {
             network: this.network,
         };
     }
+    /**
+     * Funds a wallet for the first time on testnets: USDC if below 1, ETH gas if below 0.001.
+     * Skips both if already funded. Fails silently on faucet rate-limits.
+     * @returns true if the wallet holds >= 1 USDC after this call.
+     */
+    async fundOnFirstSend(address) {
+        if (this.network === "base-mainnet")
+            return true;
+        try {
+            const usdc = Number(await this.getUsdcBalance(address));
+            if (usdc < 1) {
+                const hash = await this.faucetUsdc(address);
+                await this.waitForReceipt(hash);
+                await new Promise((r) => setTimeout(r, 8000));
+            }
+        }
+        catch {
+            // faucet rate-limited — fall through, caller retries
+        }
+        try {
+            const eth = Number(await this.getNativeBalance(address));
+            if (eth < 0.001) {
+                const hash = await this.faucetEth(address);
+                await this.waitForReceipt(hash);
+            }
+        }
+        catch {
+            // ETH faucet rate-limited — fall through
+        }
+        return Number(await this.getUsdcBalance(address)) >= 1;
+    }
 }
