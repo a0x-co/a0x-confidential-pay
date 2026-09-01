@@ -60,36 +60,14 @@ export function ConfidentialUSDC({
   }
 
   return (
-    <div
-      className="a0x-cpay"
-      style={{
-        border: "1px solid #2a2a2a",
-        borderRadius: "12px",
-        padding: "20px",
-        background: "#0d0d0d",
-        color: "#ededed",
-        fontFamily: "ui-sans-serif, system-ui, sans-serif",
-        maxWidth: "360px",
-      }}
-    >
-      <div
-        style={{
-          fontSize: "12px",
-          textTransform: "uppercase",
-          letterSpacing: "0.12em",
-          color: "#8a8a8a",
-          marginBottom: "12px",
-        }}
-      >
-        Confidential USDC · Base
-      </div>
+    <div className="cpw">
+      <div className="cpw-label">Confidential USDC · Base</div>
 
-      <label
-        style={{ display: "block", fontSize: "13px", marginBottom: "4px" }}
-      >
+      <label className="cpw-field-label" htmlFor="cpw-amount">
         Amount (USDC)
       </label>
       <input
+        id="cpw-amount"
         type="number"
         inputMode="decimal"
         min="0.01"
@@ -97,60 +75,29 @@ export function ConfidentialUSDC({
         value={amount}
         disabled={lockedAmount || status === "sending"}
         onChange={(e) => setAmount(e.target.value)}
-        style={{
-          width: "100%",
-          boxSizing: "border-box",
-          padding: "10px 12px",
-          borderRadius: "8px",
-          border: "1px solid #333",
-          background: "#0a0a0a",
-          color: "#ededed",
-          fontSize: "16px",
-          marginBottom: "16px",
-        }}
+        className="cpw-input"
         aria-label="Amount in USDC"
       />
 
-      <div style={{ fontSize: "12px", color: "#8a8a8a", marginBottom: "16px" }}>
-        To: <span style={{ color: "#f5a623" }}>{recipient}</span>
+      <div className="cpw-recipient">
+        To: <span className="cpw-recipient-addr">{recipient}</span>
       </div>
 
       <button
         onClick={handlePay}
         disabled={status === "sending"}
-        style={{
-          width: "100%",
-          padding: "12px",
-          borderRadius: "8px",
-          background: "#ededed",
-          color: "#0d0d0d",
-          border: "none",
-          fontSize: "15px",
-          fontWeight: 600,
-          cursor: status === "sending" ? "wait" : "pointer",
-        }}
+        className={`cpw-button${status === "sending" ? " is-sending" : ""}`}
       >
         {status === "sending" ? "Sending…" : `Pay ${amount} USDC`}
       </button>
 
       {status === "success" ? (
-        <div
-          style={{
-            marginTop: "12px",
-            fontSize: "12px",
-            color: "#4ade80",
-            wordBreak: "break-all",
-          }}
-          role="status"
-        >
-          Sent. Tx: {message}
+        <div className="cpw-status is-success" role="status">
+          Sent. Tx: <span className="cpw-hash">{message}</span>
         </div>
       ) : null}
       {status === "error" ? (
-        <div
-          style={{ marginTop: "12px", fontSize: "12px", color: "#f87171" }}
-          role="alert"
-        >
+        <div className="cpw-status is-error" role="alert">
           {message}
         </div>
       ) : null}
