@@ -48,7 +48,7 @@ function MintPrompt() {
       <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[var(--fg)] mb-3">
         Claim a 30-minute wallet
       </h1>
-      <p className="text-sm text-[#8fb5b5] mb-12 leading-relaxed max-w-md mx-auto">
+      <p className="font-mono text-sm text-[#8fb5b5] mb-12 leading-relaxed max-w-lg mx-auto">
         We mint a fresh CDP-managed wallet just for you. No email, no account, no
         database. It funds itself on first send and vanishes after 30 minutes.
       </p>
