@@ -44,20 +44,20 @@ export default async function StartPage() {
 
 function MintPrompt() {
   return (
-    <div className="cpay-terminal p-6">
-      <h1 className="text-xl font-semibold tracking-tight text-[var(--fg)] mb-2">
+    <div className="text-center">
+      <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[var(--fg)] mb-3">
         Claim a 30-minute wallet
       </h1>
-      <p className="text-sm text-[#8fb5b5] mb-6 leading-relaxed">
+      <p className="text-sm text-[#8fb5b5] mb-12 leading-relaxed max-w-md mx-auto">
         We mint a fresh CDP-managed wallet just for you. No email, no account, no
         database. It funds itself on first send and vanishes after 30 minutes.
       </p>
-      <form action="/api/start" method="POST" className="flex flex-col gap-3">
+      <form action="/api/start" method="POST" className="mb-16">
         <button type="submit" className="cpay-button">
           Mint my wallet
         </button>
       </form>
-      <p className="cpay-monolabel text-[11px] tracking-[0.18em] uppercase text-[#6b8585] mt-6">
+      <p className="cpay-monolabel text-[11px] tracking-[0.18em] uppercase text-[#6b8585]">
         expires · 30 min · no persistence · refresh = new wallet
       </p>
     </div>
