@@ -6,14 +6,12 @@ import "@bvdaniel/private-pay/ConfidentialUSDC.css";
 export function StartDashboard({ wallet }: { wallet: `0x${string}` }) {
   return (
     <div className="space-y-4">
-      <div className="cpay-terminal p-5">
-        <ConfidentialUSDC
-          recipient=""
-          amount="0.5"
-          endpoint="/api/send"
-          sender={wallet}
-        />
-      </div>
+      <ConfidentialUSDC
+        recipient=""
+        amount="0.5"
+        endpoint="/api/send"
+        sender={wallet}
+      />
 
       <form
         action="/api/forget"
