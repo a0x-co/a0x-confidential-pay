@@ -1,7 +1,7 @@
 {
   "name": "@bvdaniel/private-pay-core",
-  "version": "0.2.0",
-  "description": "Core wrapper around CDP Non-custodial Wallets for private USDC payments on Base.",
+  "version": "0.3.0",
+  "description": "Core wrapper around CDP smart accounts for private USDC payments on Base. Self-funded gas via batched swap.",
   "keywords": [
     "private",
     "payments",

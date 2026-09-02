@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await pay.sendUsdcPayment({
-      from: kp.wallet,
+      walletName: kp.name,
       to: recipient as `0x${string}`,
       amount,
     });
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
-        transactionHash: result.transactionHash,
+        userOpHash: result.userOpHash,
         network: result.network,
         sender: kp.wallet,
       },

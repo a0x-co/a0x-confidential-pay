@@ -10,10 +10,11 @@ We shipped a working end-to-end demo of `@bvdaniel/private-pay` — a drop-in Re
 - **Repo:** github.com/a0x-co/a0x-private-pay (renamed from a0x-confidential-pay — Vercel redirects)
 - **Vercel project:** `a0x-confidential-pay-demo` (id `prj_ssLOsHiSIp7sjPqYOGLlrv2XVWWr`)
 - **What works end-to-end:** confirmed live, tx `0x0feb9e27eeb7a113f7a1eb00bdfaf94aa6ee34798d74fb29dcaf012726fab7fb` on Base Sepolia
-- **Published to npm:** `@bvdaniel/private-pay@0.2.0` + `@bvdaniel/private-pay-core@0.2.0` (old `@bvdaniel/confidential-pay*` deprecated)
+- **Published to npm:** `@bvdaniel/private-pay@0.3.0` + `@bvdaniel/private-pay-core@0.3.0` (old `@bvdaniel/confidential-pay*` + v0.2.0 deprecated)
+- **Gasless onchain:** sends are CDP smart accounts (ERC-4337) — a batched user op approves USDC to Uniswap V3, swaps 0.005 USDC → ETH, and transfers USDC. **No ETH needed**; verified live on Base Sepolia (tx `0x378ea986da3b210558bf5462081daf7159d063094a7c564790b7ba52cbb7d6f3`, sender started at 0 ETH).
 - **What's left:** swap the public ERC-20 transfer for a confidential one via Base Ledgers (Track B)
 
-The flow is verified: visitor mints → dashboard shows a fresh wallet → enter recipient + amount → pay → tx settles on Base Sepolia. Server is stateless; the 30-min identity is an HMAC-signed cookie.
+The flow is verified: visitor mints → dashboard shows a fresh wallet → enter recipient + amount → pay → user op settles on Base Sepolia, gas self-funded via in-op swap. Server is stateless; the 30-min identity is an HMAC-signed cookie that now also carries the wallet `name` (owner is re-fetched by CDP on each request).
 
 ## Decisions locked (single source of truth — don't relitigate without reading this)
 
@@ -43,20 +44,26 @@ a0x-private-pay/                                     (pnpm workspace)
 ├── apps/demo/                                       (Next.js 14, deployed)
 │   ├── app/page.tsx                                 (landing — "Get a wallet"; H1 is large text-7xl)
 │   ├── app/start/page.tsx                           (server component: mint prompt or dashboard)
-│   ├── app/api/start/route.ts                       (POST: mint wallet, set kp cookie, 303)
-│   ├── app/api/send/route.ts                        (POST: verify cookie, fund-on-first-send, send; 502 if faucet rate-limited)
+│   ├── app/api/start/route.ts                       (POST: mint smart account, set kp cookie, 303)
+│   ├── app/api/send/route.ts                        (POST: fund-on-first-send, sendUserOperation; returns userOpHash)
+│   ├── app/api/send/[hash]/route.ts                 (GET: poll user op status via getUserOperation)
+│   ├── app/api/faucet/route.ts                      (POST: manual testnet USDC faucet)
+│   ├── app/api/balance/route.ts                     (GET: USDC + ETH balance)
 │   ├── app/api/forget/route.ts                      (POST: clear kp cookie, 303 to /)
+│   ├── components/wallet-card.tsx                   (client: badge, countdown, balance, faucet)
 │   ├── components/start-dashboard.tsx               (client: widget + forget form)
-│   ├── lib/kp.ts                                    (HMAC sign/verify for the kp cookie)
+│   ├── components/copy-button.tsx                   (client: clipboard)
+│   ├── lib/kp.ts                                    (HMAC cookie: {wallet, name, iat})
 │   ├── .env.local                                   (CDP creds + KP_SECRET — gitignored)
 │   └── .env.example                                 (committed template)
 │
-├── packages/core/                                   (@bvdaniel/private-pay-core — Node only, v0.2.0 on npm)
-│   └── src/index.ts                                 (ConfidentialPay class; fundOnFirstSend polls USDC)
+├── packages/core/                                   (@bvdaniel/private-pay-core — Node only, v0.3.0 on npm)
+│   ├── src/index.ts                                 (ConfidentialPay: smart accounts, sendUserOperation, gasless)
+│   └── src/abis.ts                                  (Uniswap V3 SwapRouter02 + WETH constants)
 │
-└── packages/react/                                  (@bvdaniel/private-pay — v0.2.0 on npm)
-    ├── src/index.tsx                                (ConfidentialUSDC widget; editable recipient when prop is empty)
-    ├── src/server.ts                                (createConfidentialPayHandler)
+└── packages/react/                                  (@bvdaniel/private-pay — v0.3.0 on npm)
+    ├── src/index.tsx                                (ConfidentialUSDC widget; userOpHash status polling)
+    ├── src/server.ts                                (createConfidentialPayHandler; returns userOpHash)
     └── src/ConfidentialUSDC.css                     (CSS shipped via dist/)
 ```
 
@@ -77,10 +84,18 @@ The CDP credential values live in `apps/demo/.env.local` (gitignored) and as Ver
 ### 1. Track B — CDP Payments business onboarding (gates real confidentiality)
 Required for actual Base Ledgers confidential transfers (public ERC-20 today). Steps: `portal.cdp.coinbase.com` → `a0x-confidential-pay` project → "Go live with payments" 3-step flow (Business details → Compliance → Go live). Approval takes weeks. Once cleared, swap `sendUsdcPayment` in `packages/core/src/index.ts` → call Base Ledgers. The widget and demo need no changes.
 
-### 2. ~~Publish to npm~~ → DONE (v0.2.0 on npm)
-`@bvdaniel/private-pay@0.2.0` and `@bvdaniel/private-pay-core@0.2.0` are live (renamed from `@bvdaniel/confidential-pay*`, which are deprecated). Scope is `@bvdaniel` (npm user `bvdaniel`) — the `@a0x` npm scope does not exist and free accounts can't create it. Republish: from workspace root, `pnpm publish --filter @bvdaniel/private-pay-core` then `pnpm publish --filter @bvdaniel/private-pay`. See "npm publish gotchas" in Sharp edges.
+### 2. ~~Publish to npm~~ → DONE (v0.3.0 on npm)
+`@bvdaniel/private-pay@0.3.0` and `@bvdaniel/private-pay-core@0.3.0` are live (v0.2.0 + old `@bvdaniel/confidential-pay*` deprecated). v0.3.0 is the **smart-account refactor with self-funded gas** — sends batch approve+swap+transfer in one ERC-4337 user op, so **no ETH is required**. Scope is `@bvdaniel` (npm user `bvdaniel`). Republish: `pnpm publish --filter @bvdaniel/private-pay-core` then `pnpm publish --filter @bvdaniel/private-pay`. See Sharp edges.
 
 ## Sharp edges — what didn't work and why
+
+### Gasless send (self-funded swap) — how and gotchas
+- Each send is ONE user op with 3 batched calls: `approve(USDC, SwapRouter02, MAX)` → `exactInputSingle(0.005 USDC → WETH→ETH)` → `transfer(USDC, recipient)`. Wait, no external ETH is pre-required — the swapped ETH is consumed as the user op's gas (sender ends at 0 ETH, tx still succeeds).
+- Uniswap V3 `SwapRouter02` is `0x2626664c2603336E57B271c5C0b26F421741e481` on both Base and Base Sepolia; WETH is `0x4200...0006`; fee tier 500 (0.05%).
+- `sendUsdcPayment` returns `userOpHash`, NOT `transactionHash`. The UI must poll `GET /api/send/:hash` (`getUserOperation`, from SDK).
+- **Don't use `waitForUserOperation` with `timeoutSeconds: 0`** — it returns before the op settles and reports "pending" forever. Use `getUserOperation` real-poll instead (fixed in v0.3.0).
+- Gas overhead: reject/approve+swap add ~120k gas vs a plain transfer, but on testnet it's free and on mainnet ~$0.001–0.005/tx at current rates.
+- Each wallet = a CDP **smart account** (ERC-4337) + one server-managed owner EOA. Wallet identity cookie now carries `{wallet, name, iat}`; the owner is re-fetched via `getAccount({ name: "${name}-owner" })` so the send route can re-resolve `getOrCreateSmartAccount({ name, owner })`.
 
 ### Vercel monorepo deploy settings (cost many cycles — don't reopen)
 - `rootDirectory: apps/demo` and `framework: nextjs` set on the **project** (not in a `vercel.json`).
@@ -127,18 +142,24 @@ COOKIE=$(grep -i 'set-cookie:' /tmp/m.txt | sed 's/set-cookie: //I' | cut -d';' 
 # 2. /start renders dashboard with this cookie
 curl -s -H "Cookie: $COOKIE" http://localhost:3300/start | grep "Send privately"
 
-# 3. send 0.05 USDC
+# 3. send 0.05 USDC — faucet may rate-limit; if so, wait for hourly reset
 curl -s -H "Cookie: $COOKIE" -X POST http://localhost:3300/api/send \
   -H "Content-Type: application/json" \
   -d '{"recipient":"0x95F09B69C3E36B9c167304E0C174e0f48e62BD50","amount":"0.05"}'
-# → {"ok":true,"transactionHash":"0x…","network":"base-sepolia","sender":"0x…"}
+# → {"ok":true,"userOpHash":"0x…","network":"base-sepolia","sender":"0x…"}
+USEROP=$(curl -s -H "Cookie: $COOKIE" -X POST http://localhost:3300/api/send \
+  -H "Content-Type: application/json" \
+  -d '{"recipient":"0x95F09B69C3E36B9c167304E0C174e0f48e62BD50","amount":"0.05"}' \
+  | grep -o '"userOpHash":"0x[a-fA-F0-9]*"')
 
-# 4. confirm onchain (core package has the receipt helper)
-cd ../packages/core && node --env-file=.env -e "
-import('./dist/index.js').then(async ({ConfidentialPay}) => {
-  const pay = new ConfidentialPay();
-  console.log((await pay.waitForReceipt('0x…')).status);
-})" 2>&1 | grep -vE 'injected env|tip:'
+# 4. poll status until complete
+while true; do
+  R=$(curl -s -H "Cookie: $COOKIE" "http://localhost:3300/api/send/$(echo $USEROP | sed 's/.*:"\(0x[a-fA-F0-9]*\)".*/\1/')")
+  echo "$R"
+  echo "$R" | grep -q '"complete"' && break
+  sleep 4
+done
+# → {"status":"complete","transactionHash":"0x…"}
 ```
 
 ## Working preferences (match these)

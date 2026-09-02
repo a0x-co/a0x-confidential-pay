@@ -1,7 +1,7 @@
 {
   "name": "@bvdaniel/private-pay",
-  "version": "0.2.0",
-  "description": "Drop-in private USDC payments widget for Base. Built on CDP Non-custodial Wallets.",
+  "version": "0.3.0",
+  "description": "Drop-in private USDC payments widget for Base. Self-funded gas, no ETH needed. Built on CDP smart accounts.",
   "keywords": [
     "private",
     "payments",

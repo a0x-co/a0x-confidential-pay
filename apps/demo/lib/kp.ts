@@ -6,6 +6,7 @@ export const KP_TTL_S = 30 * 60;
 export type KpPayload = {
   jti: string;
   wallet: `0x${string}`;
+  name: string;
   iat: number;
 };
 
@@ -43,19 +44,19 @@ export function verifyKp(cookie: string | undefined): KpPayload | null {
   try {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as KpPayload;
     const ageS = Math.floor(Date.now() / 1000) - payload.iat;
-    if (!payload.jti || !payload.wallet || ageS > KP_TTL_S) return null;
+    if (!payload.jti || !payload.wallet || !payload.name || ageS > KP_TTL_S) return null;
     return payload;
   } catch {
     return null;
   }
 }
 
-export function newKpPayload(wallet: `0x${string}`): KpPayload {
-  return { jti: randomUUID(), wallet, iat: Math.floor(Date.now() / 1000) };
+export function newKpPayload(wallet: `0x${string}`, name: string): KpPayload {
+  return { jti: randomUUID(), wallet, name, iat: Math.floor(Date.now() / 1000) };
 }
 
-export function kpCookieHeader(wallet: `0x${string}`): string {
-  const payload = newKpPayload(wallet);
+export function kpCookieHeader(wallet: `0x${string}`, name: string): string {
+  const payload = newKpPayload(wallet, name);
   const token = signKp(payload);
   return `${KP_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=${KP_TTL_S}`;
 }

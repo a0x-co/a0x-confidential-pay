@@ -3,22 +3,27 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+async function pollBalance(
+  pay: ConfidentialPay,
+  address: `0x${string}`,
+  attempts: number,
+): Promise<string> {
+  let received = "0";
+  for (let i = 0; i < attempts; i++) {
+    received = await pay.getUsdcBalance(address);
+    if (Number(received) > 0) break;
+    await new Promise((s) => setTimeout(s, 5000));
+  }
+  return received;
+}
+
 async function main() {
   const pay = new ConfidentialPay();
   console.log(`[transfer] network: ${pay.networkName}`);
-  const sender = await pay.getOrCreateWallet("sender");
-  const receiver = await pay.getOrCreateWallet("receiver");
+  const sender = await pay.getOrCreateWallet("a0x-demo-sender-test");
+  const receiver = await pay.getOrCreateWallet("a0x-demo-receiver-test");
   console.log(`[transfer] sender:   ${sender.address}`);
   console.log(`[transfer] receiver: ${receiver.address}`);
-
-  console.log("[transfer] fauceting ETH + USDC...");
-  try {
-    const ethHash = await pay.faucetEth(sender.address);
-    console.log(`[transfer] ETH faucet tx: ${ethHash}`);
-    await pay.waitForReceipt(ethHash);
-  } catch (e: any) {
-    console.log(`[transfer] ETH faucet skipped: ${e.message ?? e}`);
-  }
 
   const senderBal = await pay.getUsdcBalance(sender.address);
   console.log(`[transfer] sender USDC before: ${senderBal}`);
@@ -34,25 +39,33 @@ async function main() {
     }
   }
 
-  // Faucet balance can lag the receipt — poll up to 30s.
-  let received = "0";
-  for (let i = 0; i < 6; i++) {
-    received = await pay.getUsdcBalance(sender.address);
-    if (Number(received) > 0) break;
-    await new Promise((s) => setTimeout(s, 5000));
-  }
+  const received = await pollBalance(pay, sender.address, 6);
   console.log(`[transfer] sender USDC after faucet: ${received}`);
 
-  console.log("[transfer] sending 0.5 USDC...");
+  console.log("[transfer] sending 0.5 USDC (self-funded gas via swap)...");
   const tx = await pay.sendUsdcPayment({
-    from: sender.address,
+    walletName: sender.name,
     to: receiver.address,
     amount: "0.5",
   });
-  console.log(`[transfer] tx: ${tx.transactionHash}`);
+  console.log(`[transfer] userOpHash: ${tx.userOpHash}`);
+  console.log("[transfer] waiting for user operation to complete...");
 
-  const receipt = await pay.waitForReceipt(tx.transactionHash);
-  console.log(`[transfer] status: ${receipt.status}`);
+  for (let i = 0; i < 20; i++) {
+    await new Promise((s) => setTimeout(s, 3000));
+    const status = await pay.getUserOperationStatus(
+      tx.userOpHash as `0x${string}`,
+      sender.name,
+    );
+    if (status.status === "complete") {
+      console.log(`[transfer] confirmed — tx: ${status.transactionHash}`);
+      break;
+    }
+    if (i === 19) {
+      console.log("[transfer] still pending after 60s — investigate");
+      process.exitCode = 1;
+    }
+  }
 
   const senderAfter = await pay.getUsdcBalance(sender.address);
   const receiverAfter = await pay.getUsdcBalance(receiver.address);

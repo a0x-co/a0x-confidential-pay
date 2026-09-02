@@ -110,6 +110,7 @@ export function WalletCard({
         </div>
         <div className="cpay-monolabel text-[10px] tracking-[0.18em] uppercase text-[#6b8585] opacity-60 flex items-center gap-2">
           <span>{eth.toFixed(4)} eth</span>
+          <span className="opacity-50">· gas auto</span>
           <button
             onClick={fetchBalance}
             disabled={loading}

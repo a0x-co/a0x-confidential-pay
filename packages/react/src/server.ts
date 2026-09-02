@@ -53,6 +53,7 @@ export function createConfidentialPayHandler(options?: {
     let sender = typeof payload.sender === "string" && payload.sender.length > 0
       ? payload.sender
       : undefined;
+    const walletName = sender ? `widget-${sender}` : "widget-auto";
 
     try {
       if (!sender) {
@@ -61,7 +62,6 @@ export function createConfidentialPayHandler(options?: {
 
         if (options?.devFaucet && isTestnet) {
           const usdcBal = Number(await pay.getUsdcBalance(sender as `0x${string}`));
-          const ethBal = Number(await pay.getNativeBalance(sender as `0x${string}`));
 
           if (usdcBal < 1) {
             try {
@@ -78,15 +78,6 @@ export function createConfidentialPayHandler(options?: {
             }
           }
 
-          if (ethBal < 0.001) {
-            try {
-              const ethHash = await pay.faucetEth(sender as `0x${string}`);
-              await pay.waitForReceipt(ethHash);
-            } catch {
-              // ETH faucet may be rate-limited; fall through if already funded
-            }
-          }
-
           const funded = Number(await pay.getUsdcBalance(sender as `0x${string}`)) >= 1;
           if (!funded) {
             return NextResponse.json(
@@ -98,7 +89,7 @@ export function createConfidentialPayHandler(options?: {
       }
 
       const result = await pay.sendUsdcPayment({
-        from: sender as `0x${string}`,
+        walletName,
         to: to as `0x${string}`,
         amount,
       });
@@ -106,7 +97,7 @@ export function createConfidentialPayHandler(options?: {
       return NextResponse.json(
         {
           ok: true,
-          transactionHash: result.transactionHash,
+          userOpHash: result.userOpHash,
           network: result.network,
           sender,
           devFaucet: true,

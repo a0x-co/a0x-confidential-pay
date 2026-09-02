@@ -1,3 +1,4 @@
+import { type EvmSmartAccount } from "@coinbase/cdp-sdk";
 export declare const USDC_ADDRESS: Record<string, `0x${string}`>;
 export declare const CHAIN: Record<string, any>;
 export interface ConfidentialPayOptions {
@@ -6,24 +7,32 @@ export interface ConfidentialPayOptions {
     walletSecret?: string;
     network?: string;
 }
+export interface Wallet {
+    address: `0x${string}`;
+    smartAccount: EvmSmartAccount;
+    ownerName: string;
+    name: string;
+}
 export declare class ConfidentialPay {
     private client;
     private network;
     private publicClient;
+    private walletCache;
     constructor(options?: ConfidentialPayOptions);
     get networkName(): string;
     /**
-     * Creates a new server-controlled EOA on Base.
+     * Creates a new CDP smart account (ERC-4337) with a server-managed owner.
+     * The owner is restored on later requests via `name` + `getAccount`.
      */
-    createWallet(name?: string): Promise<{
-        address: `0x${string}`;
-    }>;
+    createWallet(name: string): Promise<Wallet>;
+    /**
+     * Restores a previously-created smart account from its name (owner refetched).
+     */
+    getSavedWallet(name: string): Promise<Wallet>;
     /**
      * Get or create a named wallet. Idempotent.
      */
-    getOrCreateWallet(name: string): Promise<{
-        address: `0x${string}`;
-    }>;
+    getOrCreateWallet(name: string): Promise<Wallet>;
     /**
      * Requests testnet ETH from the CDP faucet (only works on testnets).
      */
@@ -45,21 +54,45 @@ export declare class ConfidentialPay {
      */
     getNativeBalance(address: `0x${string}`): Promise<string>;
     /**
-     * Sends a USDC payment from a wallet address to a recipient.
-     * Returns the transaction hash.
+     * Sends a USDC payment from a smart account to a recipient.
+     *
+     * Gasless for the user: one user operation batches three calls atomically:
+     *   1. approve(USDC, SwapRouter, MAX)
+     *   2. SwapRouter.exactInputSingle(0.005 USDC → ETH)  — self-funded gas
+     *   3. transfer(USDC, recipient, amount)
+     *
+     * Returns the user operation hash (not a tx hash yet). Poll
+     * `getUserOperationStatus(userOpHash, address)` for the final tx hash.
      */
     sendUsdcPayment(params: {
-        from: `0x${string}`;
+        walletName: string;
         to: `0x${string}`;
         amount: string;
     }): Promise<{
-        transactionHash: `0x${string}`;
+        userOpHash: `0x${string}`;
         network: string;
+        sender: `0x${string}`;
     }>;
     /**
-     * Funds a wallet for the first time on testnets: USDC if below 1, ETH gas if below 0.001.
-     * Skips both if already funded. Fails silently on faucet rate-limits.
-     * @returns true if the wallet holds >= 1 USDC after this call.
+     * Resolves the final status of a user operation via a real poll
+     * of CDP's getUserOperation (transaction hash is set once included in a block).
+     */
+    getUserOperationStatus(userOpHash: `0x${string}`, walletName: string): Promise<{
+        status: "complete";
+        transactionHash: `0x${string}`;
+        error?: undefined;
+    } | {
+        status: "failed";
+        error: string;
+        transactionHash?: undefined;
+    } | {
+        status: "pending";
+        transactionHash?: undefined;
+        error?: undefined;
+    }>;
+    /**
+     * Funds a wallet for the first time on testnets: USDC if below 1.
+     * ETH is NOT needed anymore — sendUsdcPayment self-funds gas via swap.
      */
     fundOnFirstSend(address: `0x${string}`): Promise<boolean>;
 }

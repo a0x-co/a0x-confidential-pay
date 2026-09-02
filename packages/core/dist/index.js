@@ -1,6 +1,7 @@
 import { CdpClient } from "@coinbase/cdp-sdk";
-import { createPublicClient, http, encodeFunctionData, parseUnits, formatUnits } from "viem";
+import { createPublicClient, http, encodeFunctionData, parseUnits, formatUnits, maxUint256, } from "viem";
 import { base, baseSepolia } from "viem/chains";
+import { ERC20_APPROVE_ABI, getSwapRouter, getWeth, GAS_SWAP_USDC, SWAP_ROUTER_ABI, UNISWAP_FEE_TIER, } from "./abis.js";
 export const USDC_ADDRESS = {
     "base-mainnet": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     "base-sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
@@ -37,6 +38,7 @@ export class ConfidentialPay {
     client;
     network;
     publicClient;
+    walletCache = new Map();
     constructor(options = {}) {
         this.client = new CdpClient({
             apiKeyId: options.apiKeyId || process.env.CDP_API_KEY_ID,
@@ -56,18 +58,53 @@ export class ConfidentialPay {
         return this.network;
     }
     /**
-     * Creates a new server-controlled EOA on Base.
+     * Creates a new CDP smart account (ERC-4337) with a server-managed owner.
+     * The owner is restored on later requests via `name` + `getAccount`.
      */
     async createWallet(name) {
-        const account = await this.client.evm.createAccount({ name });
-        return { address: account.address };
+        if (this.walletCache.has(name))
+            return this.walletCache.get(name);
+        const owner = await this.client.evm.createAccount({
+            name: `${name}-owner`,
+        });
+        const smart = await this.client.evm.getOrCreateSmartAccount({
+            name,
+            owner,
+        });
+        const wallet = {
+            address: smart.address,
+            smartAccount: smart,
+            ownerName: `${name}-owner`,
+            name,
+        };
+        this.walletCache.set(name, wallet);
+        return wallet;
+    }
+    /**
+     * Restores a previously-created smart account from its name (owner refetched).
+     */
+    async getSavedWallet(name) {
+        if (this.walletCache.has(name))
+            return this.walletCache.get(name);
+        const owner = await this.client.evm.getAccount({ name: `${name}-owner` });
+        const smart = await this.client.evm.getOrCreateSmartAccount({
+            name,
+            owner,
+        });
+        const wallet = {
+            address: smart.address,
+            smartAccount: smart,
+            ownerName: `${name}-owner`,
+            name,
+        };
+        this.walletCache.set(name, wallet);
+        return wallet;
     }
     /**
      * Get or create a named wallet. Idempotent.
      */
     async getOrCreateWallet(name) {
-        const account = await this.client.evm.getOrCreateAccount({ name });
-        return { address: account.address };
+        return this.createWallet(name);
     }
     /**
      * Requests testnet ETH from the CDP faucet (only works on testnets).
@@ -126,37 +163,89 @@ export class ConfidentialPay {
         return formatUnits(balance, 18);
     }
     /**
-     * Sends a USDC payment from a wallet address to a recipient.
-     * Returns the transaction hash.
+     * Sends a USDC payment from a smart account to a recipient.
+     *
+     * Gasless for the user: one user operation batches three calls atomically:
+     *   1. approve(USDC, SwapRouter, MAX)
+     *   2. SwapRouter.exactInputSingle(0.005 USDC → ETH)  — self-funded gas
+     *   3. transfer(USDC, recipient, amount)
+     *
+     * Returns the user operation hash (not a tx hash yet). Poll
+     * `getUserOperationStatus(userOpHash, address)` for the final tx hash.
      */
     async sendUsdcPayment(params) {
         const usdc = USDC_ADDRESS[this.network];
         if (!usdc)
             throw new Error(`USDC not configured for network ${this.network}`);
+        const router = getSwapRouter(this.network);
+        const weth = getWeth(this.network);
+        const wallet = await this.getSavedWallet(params.walletName);
+        const from = wallet.address;
         const amount = parseUnits(params.amount, 6);
-        const data = encodeFunctionData({
+        const approveData = encodeFunctionData({
+            abi: ERC20_APPROVE_ABI,
+            functionName: "approve",
+            args: [router, maxUint256],
+        });
+        const swapData = encodeFunctionData({
+            abi: SWAP_ROUTER_ABI,
+            functionName: "exactInputSingle",
+            args: [
+                {
+                    tokenIn: usdc,
+                    tokenOut: weth,
+                    fee: UNISWAP_FEE_TIER,
+                    recipient: from,
+                    amountIn: GAS_SWAP_USDC,
+                    amountOutMinimum: 0n,
+                    sqrtPriceLimitX96: 0n,
+                },
+            ],
+        });
+        const transferData = encodeFunctionData({
             abi: ERC20_TRANSFER_ABI,
             functionName: "transfer",
             args: [params.to, amount],
         });
-        const res = await this.client.evm.sendTransaction({
-            address: params.from,
-            transaction: {
-                to: usdc,
-                data,
-                value: BigInt(0),
-            },
+        const result = await this.client.evm.sendUserOperation({
+            smartAccount: wallet.smartAccount,
+            calls: [
+                { to: usdc, data: approveData, value: BigInt(0) },
+                { to: router, data: swapData, value: BigInt(0) },
+                { to: usdc, data: transferData, value: BigInt(0) },
+            ],
             network: this.network,
         });
         return {
-            transactionHash: res.transactionHash,
+            userOpHash: result.userOpHash,
             network: this.network,
+            sender: from,
         };
     }
     /**
-     * Funds a wallet for the first time on testnets: USDC if below 1, ETH gas if below 0.001.
-     * Skips both if already funded. Fails silently on faucet rate-limits.
-     * @returns true if the wallet holds >= 1 USDC after this call.
+     * Resolves the final status of a user operation via a real poll
+     * of CDP's getUserOperation (transaction hash is set once included in a block).
+     */
+    async getUserOperationStatus(userOpHash, walletName) {
+        const wallet = await this.getSavedWallet(walletName);
+        const op = await this.client.evm.getUserOperation({
+            smartAccount: wallet.smartAccount,
+            userOpHash,
+        });
+        if (op.status === "complete" && op.transactionHash) {
+            return {
+                status: "complete",
+                transactionHash: op.transactionHash,
+            };
+        }
+        if (op.status === "failed" || op.status === "dropped") {
+            return { status: "failed", error: `user operation ${op.status}` };
+        }
+        return { status: "pending" };
+    }
+    /**
+     * Funds a wallet for the first time on testnets: USDC if below 1.
+     * ETH is NOT needed anymore — sendUsdcPayment self-funds gas via swap.
      */
     async fundOnFirstSend(address) {
         if (this.network === "base-mainnet")
@@ -177,17 +266,6 @@ export class ConfidentialPay {
         }
         catch {
             // faucet rate-limited — fall through, caller retries
-        }
-        try {
-            const eth = Number(await this.getNativeBalance(address));
-            if (eth < 0.001) {
-                const hash = await this.faucetEth(address);
-                await this.waitForReceipt(hash);
-                await applyTimeout(5000);
-            }
-        }
-        catch {
-            // ETH faucet rate-limited — fall through
         }
         return Number(await this.getUsdcBalance(address)) >= 1;
     }

@@ -44,13 +44,13 @@ export function createConfidentialPayHandler(options) {
         let sender = typeof payload.sender === "string" && payload.sender.length > 0
             ? payload.sender
             : undefined;
+        const walletName = sender ? `widget-${sender}` : "widget-auto";
         try {
             if (!sender) {
                 const wallet = await pay.getOrCreateWallet("widget-auto");
                 sender = wallet.address;
                 if (options?.devFaucet && isTestnet) {
                     const usdcBal = Number(await pay.getUsdcBalance(sender));
-                    const ethBal = Number(await pay.getNativeBalance(sender));
                     if (usdcBal < 1) {
                         try {
                             const hash = await pay.faucetUsdc(sender);
@@ -67,15 +67,6 @@ export function createConfidentialPayHandler(options) {
                             // faucet may be rate-limited; fall through if already funded
                         }
                     }
-                    if (ethBal < 0.001) {
-                        try {
-                            const ethHash = await pay.faucetEth(sender);
-                            await pay.waitForReceipt(ethHash);
-                        }
-                        catch {
-                            // ETH faucet may be rate-limited; fall through if already funded
-                        }
-                    }
                     const funded = Number(await pay.getUsdcBalance(sender)) >= 1;
                     if (!funded) {
                         return NextResponse.json({ error: "faucet unavailable — fund the sender wallet or retry" }, { status: 502 });
@@ -83,13 +74,13 @@ export function createConfidentialPayHandler(options) {
                 }
             }
             const result = await pay.sendUsdcPayment({
-                from: sender,
+                walletName,
                 to: to,
                 amount,
             });
             return NextResponse.json({
                 ok: true,
-                transactionHash: result.transactionHash,
+                userOpHash: result.userOpHash,
                 network: result.network,
                 sender,
                 devFaucet: true,

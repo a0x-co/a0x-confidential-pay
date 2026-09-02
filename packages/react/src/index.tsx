@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 export type ConfidentialUSDCProps = {
   /** Wallet or email address receiving the payment. */
@@ -19,7 +19,20 @@ export type ConfidentialUSDCProps = {
   sender?: string;
 };
 
-type Status = "idle" | "sending" | "success" | "error";
+type Status = "idle" | "sending" | "settling" | "success" | "error";
+
+type PostResponse = {
+  ok?: boolean;
+  userOpHash?: string;
+  transactionHash?: string;
+  error?: string;
+};
+
+type StatusResponse = {
+  status?: "complete" | "pending" | "failed";
+  transactionHash?: string;
+  error?: string;
+};
 
 export function ConfidentialUSDC({
   recipient,
@@ -37,23 +50,66 @@ export function ConfidentialUSDC({
   const [effectiveSender, setEffectiveSender] = useState<string | undefined>(
     sender,
   );
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const to = recipient || recipientInput;
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  const pollStatus = useCallback(
+    async (userOpHash: string) => {
+      try {
+        const res = await fetch(`${endpoint}/${userOpHash}`);
+        const body: StatusResponse = await res.json();
+        if (body.status === "complete" && body.transactionHash) {
+          stopPolling();
+          setStatus("success");
+          setMessage(body.transactionHash);
+          onSuccess?.(body.transactionHash);
+        } else if (body.status === "failed") {
+          stopPolling();
+          setStatus("error");
+          setMessage(body.error ?? "transaction failed");
+          onError?.(body.error ?? "transaction failed");
+        }
+      } catch {
+        // transient network error — keep polling
+      }
+    },
+    [endpoint, onSuccess, onError, stopPolling],
+  );
 
   async function handlePay() {
     setStatus("sending");
     setMessage("");
+    stopPolling();
     try {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipient: to, amount, sender: effectiveSender }),
       });
-      const body = await res.json();
+      const body: PostResponse = await res.json();
       if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`);
+
+      if (body.userOpHash) {
+        // Async user operation — poll status until settled.
+        setStatus("settling");
+        setMessage("broadcasting…");
+        const hash = body.userOpHash;
+        pollRef.current = setInterval(() => pollStatus(hash), 4000);
+        return;
+      }
+
+      // Legacy synchronous response — done immediately.
       setStatus("success");
-      setMessage(body.transactionHash);
-      onSuccess?.(body.transactionHash);
+      setMessage(body.transactionHash ?? "sent");
+      body.transactionHash && onSuccess?.(body.transactionHash);
     } catch (e) {
       setStatus("error");
       const m = e instanceof Error ? e.message : "Unknown error";
@@ -61,6 +117,15 @@ export function ConfidentialUSDC({
       onError?.(m);
     }
   }
+
+  useEffect(() => stopPolling, [stopPolling]);
+
+  const buttonLabel =
+    status === "sending"
+      ? "Broadcasting…"
+      : status === "settling"
+        ? "Confirming…"
+        : `Pay ${amount} USDC`;
 
   return (
     <div className="cpw">
@@ -80,7 +145,7 @@ export function ConfidentialUSDC({
           inputMode="text"
           placeholder="0x…"
           value={recipientInput}
-          disabled={status === "sending"}
+          disabled={status === "sending" || status === "settling"}
           onChange={(e) => setRecipientInput(e.target.value)}
           className="cpw-input"
           aria-label="Recipient wallet address"
@@ -97,7 +162,9 @@ export function ConfidentialUSDC({
         min="0.01"
         step="0.01"
         value={amount}
-        disabled={lockedAmount || status === "sending"}
+        disabled={
+          lockedAmount || status === "sending" || status === "settling"
+        }
         onChange={(e) => setAmount(e.target.value)}
         className="cpw-input"
         aria-label="Amount in USDC"
@@ -105,10 +172,10 @@ export function ConfidentialUSDC({
 
       <button
         onClick={handlePay}
-        disabled={status === "sending"}
-        className={`cpw-button${status === "sending" ? " is-sending" : ""}`}
+        disabled={status === "sending" || status === "settling"}
+        className={`cpw-button${status === "sending" || status === "settling" ? " is-sending" : ""}`}
       >
-        {status === "sending" ? "Sending…" : `Pay ${amount} USDC`}
+        {buttonLabel}
       </button>
 
       {status === "success" ? (
