@@ -11,7 +11,7 @@ export default function Home() {
           <span className="cpay-cursor" />
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-[var(--fg)] mb-4">
+        <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-[var(--fg)] mb-6">
           Send money privately, from this account.
         </h1>
         <p className="cpay-monolabel normal-case tracking-[0.08em] text-[#6b8585] mb-10 max-w-md mx-auto leading-relaxed">
@@ -26,7 +26,7 @@ export default function Home() {
           Get a wallet
         </Link>
 
-        <ol className="cpay-steps mt-12 text-left max-w-md mx-auto">
+        <ol className="cpay-steps mt-16 text-center max-w-2xl mx-auto">
           <li className="cpay-step">
             <span className="cpay-step-num">01</span>
             <span className="cpay-step-desc">we mint a fresh wallet, just for you</span>
