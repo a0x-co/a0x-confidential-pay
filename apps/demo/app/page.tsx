@@ -25,25 +25,6 @@ export default function Home() {
         >
           Get a wallet
         </Link>
-
-        <ol className="cpay-steps mt-16 text-center max-w-2xl mx-auto">
-          <li className="cpay-step">
-            <span className="cpay-step-num">01</span>
-            <span className="cpay-step-desc">we mint a fresh wallet, just for you</span>
-          </li>
-          <li className="cpay-step">
-            <span className="cpay-step-num">02</span>
-            <span className="cpay-step-desc">it lives for 30 minutes, then vanishes</span>
-          </li>
-          <li className="cpay-step">
-            <span className="cpay-step-num">03</span>
-            <span className="cpay-step-desc">no email, no login, no database</span>
-          </li>
-          <li className="cpay-step">
-            <span className="cpay-step-num">04</span>
-            <span className="cpay-step-desc">send USDC to any address on Base</span>
-          </li>
-        </ol>
       </div>
     </main>
   );
