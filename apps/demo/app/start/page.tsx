@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { verifyKp, KP_TTL_S } from "@/lib/kp";
 import { StartDashboard } from "@/components/start-dashboard";
+import { BalanceClient } from "@/components/balance-client";
+import { CopyButton } from "@/components/copy-button";
 
 export const runtime = "nodejs";
 
@@ -31,7 +33,14 @@ export default async function StartPage() {
             <p className="cpay-monolabel text-[11px] tracking-[0.18em] uppercase text-[#6b8585] mb-2">
               wallet · {fmtShort(kp.wallet)}
             </p>
-            <div className="cpay-hash mb-6">{kp.wallet}</div>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <div className="cpay-hash">{kp.wallet}</div>
+              <CopyButton text={kp.wallet} />
+            </div>
+            <BalanceClient wallet={kp.wallet} />
+            <p className="cpay-monolabel text-[10px] tracking-[0.15em] uppercase text-[#6b8585] opacity-60 mb-6">
+              send usdc to this address from any wallet to fund it
+            </p>
             <StartDashboard wallet={kp.wallet} />
           </div>
         ) : (
