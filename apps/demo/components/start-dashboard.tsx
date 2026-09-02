@@ -1,7 +1,7 @@
 "use client";
 
-import { ConfidentialUSDC } from "@bvdaniel/confidential-pay";
-import "@bvdaniel/confidential-pay/ConfidentialUSDC.css";
+import { ConfidentialUSDC } from "@bvdaniel/private-pay";
+import "@bvdaniel/private-pay/ConfidentialUSDC.css";
 
 export function StartDashboard({ wallet }: { wallet: `0x${string}` }) {
   return (

@@ -4,7 +4,7 @@ import type { NextRequest, NextResponse } from "next/server";
  * widget's request to CDP. Mount it as:
  *
  *   // app/api/confidential-pay/route.ts
- *   import { createConfidentialPayHandler } from "@bvdaniel/confidential-pay/server";
+ *   import { createConfidentialPayHandler } from "@bvdaniel/private-pay/server";
  *   export const POST = createConfidentialPayHandler();
  *   export const runtime = "nodejs";
  *

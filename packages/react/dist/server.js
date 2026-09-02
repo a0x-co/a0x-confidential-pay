@@ -1,4 +1,4 @@
-import { ConfidentialPay } from "@bvdaniel/confidential-pay-core";
+import { ConfidentialPay } from "@bvdaniel/private-pay-core";
 function applyTrustedTimeout(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -7,7 +7,7 @@ function applyTrustedTimeout(ms) {
  * widget's request to CDP. Mount it as:
  *
  *   // app/api/confidential-pay/route.ts
- *   import { createConfidentialPayHandler } from "@bvdaniel/confidential-pay/server";
+ *   import { createConfidentialPayHandler } from "@bvdaniel/private-pay/server";
  *   export const POST = createConfidentialPayHandler();
  *   export const runtime = "nodejs";
  *

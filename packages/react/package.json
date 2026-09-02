@@ -1,9 +1,9 @@
 {
-  "name": "@bvdaniel/confidential-pay",
-  "version": "0.1.0",
-  "description": "Drop-in confidential USDC payments widget for Base. Built on CDP Non-custodial Wallets.",
+  "name": "@bvdaniel/private-pay",
+  "version": "0.2.0",
+  "description": "Drop-in private USDC payments widget for Base. Built on CDP Non-custodial Wallets.",
   "keywords": [
-    "confidential",
+    "private",
     "payments",
     "usdc",
     "base",
@@ -16,11 +16,11 @@
   "homepage": "https://a0x-confidential-pay-demo-2w42vltmu-bvdaniels-projects.vercel.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/a0x-co/a0x-confidential-pay.git",
+    "url": "git+https://github.com/a0x-co/a0x-private-pay.git",
     "directory": "packages/react"
   },
   "bugs": {
-    "url": "https://github.com/a0x-co/a0x-confidential-pay/issues"
+    "url": "https://github.com/a0x-co/a0x-private-pay/issues"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -53,6 +53,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@bvdaniel/confidential-pay-core": "workspace:^"
+    "@bvdaniel/private-pay-core": "workspace:^"
   }
 }

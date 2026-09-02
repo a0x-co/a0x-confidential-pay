@@ -10,10 +10,10 @@ importers:
 
   apps/demo:
     dependencies:
-      '@bvdaniel/confidential-pay':
+      '@bvdaniel/private-pay':
         specifier: workspace:^
         version: link:../../packages/react
-      '@bvdaniel/confidential-pay-core':
+      '@bvdaniel/private-pay-core':
         specifier: workspace:^
         version: link:../../packages/core
       '@x402/core':
@@ -84,7 +84,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@bvdaniel/confidential-pay-core':
+      '@bvdaniel/private-pay-core':
         specifier: workspace:^
         version: link:../core
     devDependencies:

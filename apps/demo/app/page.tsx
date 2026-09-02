@@ -5,13 +5,13 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
       <div className="w-full max-w-2xl">
         <div className="cpay-monolabel flex items-center justify-center gap-2 mb-6">
-          <span>// @a0x/confidential-pay</span>
+          <span>// @a0x/private-pay</span>
           <span className="text-[#6b8585]">·</span>
           <span className="text-[#6b8585] normal-case tracking-normal">base</span>
           <span className="cpay-cursor" />
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-[var(--fg)] mb-4">
+        <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-[var(--fg)] mb-4">
           Send money privately, from this account.
         </h1>
         <p className="cpay-monolabel normal-case tracking-[0.08em] text-[#6b8585] mb-10 max-w-md mx-auto leading-relaxed">

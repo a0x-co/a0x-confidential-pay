@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { ConfidentialPay } from "@bvdaniel/confidential-pay-core";
+import { ConfidentialPay } from "@bvdaniel/private-pay-core";
 import { kpCookieHeader } from "@/lib/kp";
 
 export const runtime = "nodejs";

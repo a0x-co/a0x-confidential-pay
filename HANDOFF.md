@@ -1,16 +1,16 @@
-# Handoff — a0x-confidential-pay
+# Handoff — a0x-private-pay
 
 > State for the agent picking this up. Read the first 5 lines for "where we are"; the full file for everything else.
 
 ## Where we are (read this first)
 
-We shipped a working end-to-end demo of `@bvdaniel/confidential-pay` — a drop-in React component for confidential USDC payments on Base. Each visitor lands on the page, claims a 30-minute ephemeral wallet (no email, no account, no DB), and sends USDC from that wallet to any address on Base Sepolia.
+We shipped a working end-to-end demo of `@bvdaniel/private-pay` — a drop-in React component for private USDC payments on Base. Each visitor lands on the page, claims a 30-minute ephemeral wallet (no email, no account, no DB), and sends USDC from that wallet to any address on Base Sepolia.
 
 - **Live:** https://a0x-confidential-pay-demo-2w42vltmu-bvdaniels-projects.vercel.app
-- **Repo:** github.com/a0x-co/a0x-confidential-pay
+- **Repo:** github.com/a0x-co/a0x-private-pay (renamed from a0x-confidential-pay — Vercel redirects)
 - **Vercel project:** `a0x-confidential-pay-demo` (id `prj_ssLOsHiSIp7sjPqYOGLlrv2XVWWr`)
 - **What works end-to-end:** confirmed live, tx `0x0feb9e27eeb7a113f7a1eb00bdfaf94aa6ee34798d74fb29dcaf012726fab7fb` on Base Sepolia
-- **Published to npm:** `@bvdaniel/confidential-pay@0.1.0` + `@bvdaniel/confidential-pay-core@0.1.1`
+- **Published to npm:** `@bvdaniel/private-pay@0.2.0` + `@bvdaniel/private-pay-core@0.2.0` (old `@bvdaniel/confidential-pay*` deprecated)
 - **What's left:** swap the public ERC-20 transfer for a confidential one via Base Ledgers (Track B)
 
 The flow is verified: visitor mints → dashboard shows a fresh wallet → enter recipient + amount → pay → tx settles on Base Sepolia. Server is stateless; the 30-min identity is an HMAC-signed cookie.
@@ -39,22 +39,22 @@ The flow is verified: visitor mints → dashboard shows a fresh wallet → enter
 ## Architecture & file map
 
 ```
-a0x-confidential-pay/                                (pnpm workspace)
+a0x-private-pay/                                     (pnpm workspace)
 ├── apps/demo/                                       (Next.js 14, deployed)
-│   ├── app/page.tsx                                 (landing — "Get a wallet")
+│   ├── app/page.tsx                                 (landing — "Get a wallet"; H1 is large text-7xl)
 │   ├── app/start/page.tsx                           (server component: mint prompt or dashboard)
 │   ├── app/api/start/route.ts                       (POST: mint wallet, set kp cookie, 303)
-│   ├── app/api/send/route.ts                        (POST: verify cookie, fund-on-first-send, send)
+│   ├── app/api/send/route.ts                        (POST: verify cookie, fund-on-first-send, send; 502 if faucet rate-limited)
 │   ├── app/api/forget/route.ts                      (POST: clear kp cookie, 303 to /)
 │   ├── components/start-dashboard.tsx               (client: widget + forget form)
 │   ├── lib/kp.ts                                    (HMAC sign/verify for the kp cookie)
 │   ├── .env.local                                   (CDP creds + KP_SECRET — gitignored)
 │   └── .env.example                                 (committed template)
 │
-├── packages/core/                                   (@bvdaniel/confidential-pay-core — Node only, v0.1.1 on npm)
+├── packages/core/                                   (@bvdaniel/private-pay-core — Node only, v0.2.0 on npm)
 │   └── src/index.ts                                 (ConfidentialPay class; fundOnFirstSend polls USDC)
 │
-└── packages/react/                                  (@bvdaniel/confidential-pay — v0.1.0 on npm)
+└── packages/react/                                  (@bvdaniel/private-pay — v0.2.0 on npm)
     ├── src/index.tsx                                (ConfidentialUSDC widget; editable recipient when prop is empty)
     ├── src/server.ts                                (createConfidentialPayHandler)
     └── src/ConfidentialUSDC.css                     (CSS shipped via dist/)
@@ -77,8 +77,8 @@ The CDP credential values live in `apps/demo/.env.local` (gitignored) and as Ver
 ### 1. Track B — CDP Payments business onboarding (gates real confidentiality)
 Required for actual Base Ledgers confidential transfers (public ERC-20 today). Steps: `portal.cdp.coinbase.com` → `a0x-confidential-pay` project → "Go live with payments" 3-step flow (Business details → Compliance → Go live). Approval takes weeks. Once cleared, swap `sendUsdcPayment` in `packages/core/src/index.ts` → call Base Ledgers. The widget and demo need no changes.
 
-### 2. ~~Publish to npm~~ → DONE (v0.1.0 / v0.1.1 on npm)
-`@bvdaniel/confidential-pay@0.1.0` and `@bvdaniel/confidential-pay-core@0.1.1` are live. Scope is `@bvdaniel` (npm user `bvdaniel`) — the `@a0x` npm scope does not exist and free accounts can't create it. Republish: from workspace root, `pnpm publish --filter @bvdaniel/confidential-pay-core` then `pnpm publish --filter @bvdaniel/confidential-pay`. See "npm publish gotchas" in Sharp edges.
+### 2. ~~Publish to npm~~ → DONE (v0.2.0 on npm)
+`@bvdaniel/private-pay@0.2.0` and `@bvdaniel/private-pay-core@0.2.0` are live (renamed from `@bvdaniel/confidential-pay*`, which are deprecated). Scope is `@bvdaniel` (npm user `bvdaniel`) — the `@a0x` npm scope does not exist and free accounts can't create it. Republish: from workspace root, `pnpm publish --filter @bvdaniel/private-pay-core` then `pnpm publish --filter @bvdaniel/private-pay`. See "npm publish gotchas" in Sharp edges.
 
 ## Sharp edges — what didn't work and why
 
@@ -105,7 +105,7 @@ Required for actual Base Ledgers confidential transfers (public ERC-20 today). S
 - **`workspace:^` is rewritten to the real version at publish time** by pnpm — nobody edits package.json for that.
 - **Peer deps must have a real published range**: core's original peer `@coinbase/cdp-sdk@^0.9.0` doesn't exist (only 1.x). It's a runtime import (`CdpClient`), so it became a regular `dependency: ^1.55.0`.
 - **`@a0x` npm scope isn't owned by `bvdaniel`** — free npm accounts can't claim it. Publishes go under `@bvdaniel/*`. If a paid `@a0x` org is ever created, the packages can be renamed and republished.
-- The demo's UI copy still says "// @a0x/confidential-pay" — that's product branding, not the published package name. Leave it.
+- The demo's UI copy uses "// @a0x/private-pay" as product branding, while the published npm packages are under `@bvdaniel/*`. That's intentional — "a0x" is the brand, "bvdaniel" is the npm publisher.
 
 ## Anti-patterns to avoid
 

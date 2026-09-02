@@ -1,9 +1,9 @@
 {
-  "name": "@bvdaniel/confidential-pay-core",
-  "version": "0.1.1",
-  "description": "Core wrapper around CDP Non-custodial Wallets for confidential USDC payments on Base.",
+  "name": "@bvdaniel/private-pay-core",
+  "version": "0.2.0",
+  "description": "Core wrapper around CDP Non-custodial Wallets for private USDC payments on Base.",
   "keywords": [
-    "confidential",
+    "private",
     "payments",
     "usdc",
     "base",
@@ -16,11 +16,11 @@
   "homepage": "https://a0x-confidential-pay-demo-2w42vltmu-bvdaniels-projects.vercel.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/a0x-co/a0x-confidential-pay.git",
+    "url": "git+https://github.com/a0x-co/a0x-private-pay.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/a0x-co/a0x-confidential-pay/issues"
+    "url": "https://github.com/a0x-co/a0x-private-pay/issues"
   },
   "type": "module",
   "main": "./dist/index.js",

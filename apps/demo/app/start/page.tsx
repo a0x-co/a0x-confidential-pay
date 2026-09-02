@@ -17,7 +17,7 @@ export default async function StartPage() {
     <main className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-xl">
         <div className="cpay-monolabel flex items-center gap-2 mb-8">
-          <span>// @a0x/confidential-pay</span>
+          <span>// @a0x/private-pay</span>
           <span className="text-[#6b8585]">·</span>
           <span className="text-[#6b8585] normal-case tracking-normal">your wallet</span>
           <span className="cpay-cursor" />

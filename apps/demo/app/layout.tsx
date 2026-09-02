@@ -14,9 +14,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Confidential USDC — @a0x/confidential-pay demo",
+  title: "Private USDC — @a0x/private-pay demo",
   description:
-    "Drop-in confidential USDC payments widget for Base. Demo on Base Sepolia.",
+    "Drop-in private USDC payments widget for Base. Demo on Base Sepolia.",
 };
 
 export default function RootLayout({
