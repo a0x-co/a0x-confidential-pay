@@ -157,3 +157,69 @@ a {
 .cpw-recipient {
   font-size: 0.875rem;
 }
+
+/* Wallet card (dashboard) */
+.cpay-wallet-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1.75rem 1.5rem;
+  margin-bottom: 1.5rem;
+  background: rgba(30, 51, 51, 0.15);
+  transition: border-color 180ms ease;
+}
+.cpay-wallet-card:hover {
+  border-color: rgba(0, 255, 255, 0.25);
+}
+
+.cpay-wallet-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+}
+.cpay-wallet-badge[data-state="empty"] {
+  color: var(--muted);
+}
+.cpay-wallet-badge[data-state="funded"] {
+  color: var(--accent);
+}
+
+.cpay-wallet-countdown[data-urgency="ok"] {
+  color: var(--muted);
+}
+.cpay-wallet-countdown[data-urgency="warning"] {
+  color: #f5b800;
+}
+.cpay-wallet-countdown[data-urgency="critical"] {
+  color: #ff5c5c;
+}
+
+.cpay-wallet-faucet {
+  margin-top: 0.75rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  border-radius: 4px;
+  background: transparent;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+.cpay-wallet-faucet:hover:not(:disabled) {
+  background: rgba(0, 255, 255, 0.08);
+  border-color: var(--accent);
+}
+.cpay-wallet-faucet:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}

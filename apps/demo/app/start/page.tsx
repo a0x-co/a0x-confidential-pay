@@ -1,15 +1,9 @@
 import { cookies } from "next/headers";
 import { verifyKp, KP_TTL_S } from "@/lib/kp";
 import { StartDashboard } from "@/components/start-dashboard";
-import { BalanceClient } from "@/components/balance-client";
-import { CopyButton } from "@/components/copy-button";
-import { ExpiryCountdown } from "@/components/expiry-countdown";
+import { WalletCard } from "@/components/wallet-card";
 
 export const runtime = "nodejs";
-
-function fmtShort(addr: string) {
-  return `${addr.slice(0, 8)}…${addr.slice(-6)}`;
-}
 
 export default async function StartPage() {
   const store = await cookies();
@@ -28,17 +22,10 @@ export default async function StartPage() {
 
         {kp && kp.iat > now - KP_TTL_S ? (
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-[var(--fg)] mb-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-[var(--fg)] mb-4">
               Send privately.
             </h1>
-            <p className="cpay-monolabel text-[11px] tracking-[0.18em] uppercase text-[#6b8585] mb-2">
-              wallet · {fmtShort(kp.wallet)} · <ExpiryCountdown iat={kp.iat} ttlSeconds={KP_TTL_S} />
-            </p>
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <div className="cpay-hash">{kp.wallet}</div>
-              <CopyButton text={kp.wallet} />
-            </div>
-            <BalanceClient wallet={kp.wallet} />
+            <WalletCard wallet={kp.wallet} iat={kp.iat} ttlSeconds={KP_TTL_S} />
             <div className="border-t border-[#1e3333] my-4" />
             <StartDashboard wallet={kp.wallet} />
           </div>
